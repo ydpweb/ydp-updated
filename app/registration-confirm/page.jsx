@@ -37,7 +37,7 @@ export default function RegistrationConfirm({ userId }) {
     }
 
     axios
-      .get(`http://localhost:5000/api/user/${userId}`)
+      .get(`backend_url/api/user/${userId}`)
       .then((response) => {
         if (response.data && response.data.user) {
           setUser(response.data.user);
