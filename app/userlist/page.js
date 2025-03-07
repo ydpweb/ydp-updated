@@ -35,7 +35,7 @@ export default function UserList() {
     setLoading(true);
 
     axios
-      .get(`http://localhost:5000/api/users?district=${district}`)
+      .get(`backend_url/api/users?district=${district}`)
       .then((response) => {
         setUsers(response.data);
       })
