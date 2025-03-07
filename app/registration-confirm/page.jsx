@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import html2canvas from "html2canvas-pro"; // ✅ Use the Pro version
 import jsPDF from "jspdf";
 
-// Custom Button Component
 const Button = ({ children, onClick, className, ...props }) => (
   <button
     onClick={onClick}
@@ -17,30 +16,26 @@ const Button = ({ children, onClick, className, ...props }) => (
   </button>
 );
 
-// Custom Card Component
 const Card = ({ children, className }) => (
   <div className={`bg-white shadow-lg rounded-xl p-6 ${className}`}>
     {children}
   </div>
 );
 
-export default function RegistrationConfirm() {
+export default function RegistrationConfirm({ userId }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
   const printRef = useRef();
 
   useEffect(() => {
-    const userId = searchParams.get("userId"); // Get user ID from URL params
     if (!userId) {
       setError("No user ID found in the URL.");
       setLoading(false);
       return;
     }
 
-    // Fetch user details from the database
     axios
       .get(`http://localhost:5000/api/user/${userId}`)
       .then((response) => {
@@ -57,16 +52,16 @@ export default function RegistrationConfirm() {
       .finally(() => {
         setLoading(false);
       });
-  }, [router, searchParams]);
+  }, [userId]);
 
   const downloadPDF = async () => {
     const input = printRef.current;
 
     try {
       const canvas = await html2canvas(input, {
-        scale: 3, // Higher scale for better quality
-        useCORS: true, // Supports external images
-        backgroundColor: null, // Keeps transparent background
+        scale: 3,
+        useCORS: true,
+        backgroundColor: null,
       });
 
       const imgData = canvas.toDataURL("image/png");
@@ -87,7 +82,6 @@ export default function RegistrationConfirm() {
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
       <Card className="w-full max-w-2xl border border-gray-200">
-        {/* Letter Content */}
         <div className="p-6 text-gray-800" ref={printRef}>
           <h1 className="text-3xl font-bold text-center text-[#088e40]">Registration Confirmation</h1>
           <p className="text-sm text-center text-gray-600">All India Youth Development Party Membership Registration</p>
@@ -118,13 +112,11 @@ export default function RegistrationConfirm() {
           <p className="font-semibold text-gray-800">ALL INDIA YOUTH DEVELOPMENT PARTY</p>
         </div>
 
-        {/* PDF Download Button */}
         <div className="p-4 flex justify-center">
           <Button onClick={downloadPDF} className="bg-[#088e40] hover:bg-green-700 text-[#faff63] font-bold px-6 py-2 rounded-lg transition">
             Download PDF
           </Button>
         </div>
-
       </Card>
     </div>
   );
