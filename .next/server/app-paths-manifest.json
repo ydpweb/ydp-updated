@@ -1,0 +1,7 @@
+{
+  "/registerpage/page": "app/registerpage/page.js",
+  "/registration-confirm/page": "app/registration-confirm/page.js",
+  "/page": "app/page.js",
+  "/userlist/page": "app/userlist/page.js",
+  "/admin/export/page": "app/admin/export/page.js"
+}
