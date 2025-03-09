@@ -154,48 +154,29 @@ app.get("/api/users", async (req, res) => {
   }
 });
 
-app.post("/api/export-users", async (req, res) => {
+app.get("/api/get-all-users", async (req, res) => {
   try {
-    const { password } = req.body;
-    const ADMIN_PASSWORD = "ydp2021!"; // Change this for security
+    console.log("📥 Received request to fetch all users...");
 
-    if (password !== ADMIN_PASSWORD) {
-      return res.status(401).json({ message: "Unauthorized: Incorrect password" });
-    }
+    await connectDB(); // ✅ Ensure MongoDB is connected
+    console.log("✅ MongoDB Connection Verified");
 
-    const users = await User.find({}).lean();
+    // Fetch all users from MongoDB
+    const users = await User.find({})
+      .select("name phone location gender dob userId")
+      .lean();
+
+    console.log(`📊 Found ${users.length} users in the database`);
+
     if (users.length === 0) {
+      console.warn("⚠ No users found in the database");
       return res.status(404).json({ message: "No users found" });
     }
 
-    // ✅ Create Excel file
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Users");
-
-    // Add Headers
-    worksheet.columns = [
-      { header: "Name", key: "name", width: 20 },
-      { header: "Phone", key: "phone", width: 15 },
-      { header: "Location", key: "location", width: 20 },
-      { header: "Gender", key: "gender", width: 10 },
-      { header: "DOB", key: "dob", width: 15 },
-      { header: "User ID", key: "userId", width: 25 },
-    ];
-
-    // Add User Data
-    users.forEach((user) => worksheet.addRow(user));
-
-    // Convert to buffer
-    const buffer = await workbook.xlsx.writeBuffer();
-
-    // ✅ Proper file response
-    res.setHeader("Content-Disposition", "attachment; filename=users.xlsx");
-    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-
-    return res.end(buffer); // 🔹 Ensure the file is correctly sent
+    res.status(200).json(users);
   } catch (error) {
-    console.error("❌ Error exporting users:", error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    console.error("❌ Error fetching users:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
