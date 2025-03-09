@@ -154,6 +154,52 @@ app.get("/api/users", async (req, res) => {
   }
 });
 
+app.post("/api/export-users", async (req, res) => {
+  try {
+    const { password } = req.body;
+    const ADMIN_PASSWORD = "ydp2021!"; // Change this for security
+
+    if (password !== ADMIN_PASSWORD) {
+      return res.status(401).json({ message: "Unauthorized: Incorrect password" });
+    }
+
+    const users = await User.find({}).lean();
+    if (users.length === 0) {
+      return res.status(404).json({ message: "No users found" });
+    }
+
+    // ✅ Create Excel file
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Users");
+
+    // Add Headers
+    worksheet.columns = [
+      { header: "Name", key: "name", width: 20 },
+      { header: "Phone", key: "phone", width: 15 },
+      { header: "Location", key: "location", width: 20 },
+      { header: "Gender", key: "gender", width: 10 },
+      { header: "DOB", key: "dob", width: 15 },
+      { header: "User ID", key: "userId", width: 25 },
+    ];
+
+    // Add User Data
+    users.forEach((user) => worksheet.addRow(user));
+
+    // Convert to buffer
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    // ✅ Proper file response
+    res.setHeader("Content-Disposition", "attachment; filename=users.xlsx");
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+    return res.end(buffer); // 🔹 Ensure the file is correctly sent
+  } catch (error) {
+    console.error("❌ Error exporting users:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+
 
 
 const PORT = 5000;
